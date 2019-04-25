@@ -1,4 +1,3 @@
-# ifcb-cnn
 MATLAB code for running ifcb images through a cnn. Very much in progress. 
 
 ## General workflow 
