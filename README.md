@@ -30,7 +30,7 @@ Currently very rough results are stored in results/cnn_results.xlsx. Basically p
 # TO DO 
 ##Short term 
 - [ ] Create documentation for existing code 
-- [ ] Validate on a non-rotated validation set 
+- [X] Validate on a non-rotated validation set 
 
 ##Long Term 
 - [ ] Classify more things 
