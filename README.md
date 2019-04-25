@@ -19,6 +19,12 @@ Batch-preprocessing was generated using MATLAB's Batch Image app. Simply specify
 ### Pre-processing cont: Convolution Edition
 To make the dataset bigger and more accurate I'm trying a couple things. Currently, all that I'm running is rotate_images. You should put it at the folder you output the pre-processed images into, and it create and write copies of the image at 90, 180, and 270 degrees. This makes our dataset bigger. 
 
+### Running the CNN
+Its super easy! Just point it at wherever you've output all your processed images. It will then grab the classes from the subdirectory structure, split the images randomly, with half for training and half for validation, and run a rudimentary CNN on them. Then it will output graphs. 
+
+### Interpreting Graphs
+[ ] Write this 
+
 # TO DO 
 ##Short term 
 - [ ] Create documentation for existing code 
