@@ -1,0 +1,5 @@
+##Ignore images 
+*.png
+
+##Ignore image folders
+images/
