@@ -1,38 +1,31 @@
 function [ ] = testCNN(imagePath)
+% testCNN  Runs a basic CNN . 
+% net = testCNN(imagePath) create a basic CNN based on already
+% pre-processed images 
+% 
+% Assumes sub-directories indicate classifications. All images must be
+% pngs. Runs 4 epochs, CNN is currently based on MATLAB's example code for 
+% MINST data set. 
 
-% imagePath = manualPath + "pngs\"
-% export_png_manual_fromROI(manualPath, imagePath, roipath)
+% Puts images into datastore, with the folder names as the labels. 
 imds = imageDatastore(imagePath, ...
     'IncludeSubfolders',true,'LabelSource','foldernames');
-%Display some of the images to check
-% figure;
-% perm = randperm(10000,20);
-% for i = 1:20
-%     subplot(4,5,i);
-%     imshow(imds.Files{perm(i)});
-% end
-
-%Trying to add rotated sets
-
-%     
-%Check # of classes
+ 
+%Check # of classes. 
 labelCount = countEachLabel(imds);
 disp(labelCount)
 [min_vals, ~] = min(labelCount{:,2});
 disp(min_vals)
-%Check # of categories 
+
+%Check # of categories.  
 S = dir(imagePath);
 
 catnum = sum([S(~ismember({S.name},{'.','..'})).isdir]);
 
-%Check img size 
-img = readimage(imds,1);
-size(img)
-
-%Specify Training and Validation Sets
+%Specify Training and Validation Sets. 50/50 split
 [imdsTrain,imdsValidation] = splitEachLabel(imds,0.5,0.5,'randomize');
 
-%Define Network Architecture 
+%Define Network Architecture. Not optimized at all 
 layers = [
     imageInputLayer(size(img))
     
@@ -55,7 +48,8 @@ layers = [
     fullyConnectedLayer(max(catnum, 2))
     softmaxLayer
     classificationLayer];
-%Specify training options
+
+%Specify training options. Not optimized at all. 
 options = trainingOptions('sgdm', ...
     'InitialLearnRate',0.01, ...
     'MaxEpochs',4, ...
@@ -64,11 +58,13 @@ options = trainingOptions('sgdm', ...
     'ValidationFrequency',30, ...
     'Verbose',true, ...
     'Plots','training-progress');
-%Now train!
+
+%Now train the net!
 net = trainNetwork(imdsTrain,layers,options);
-%Now validate! 
+%Now validate the net! 
 YPred = classify(net,imdsValidation);
 YValidation = imdsValidation.Labels;
 
+% Displays graphs for accuracy. 
 accuracy = sum(YPred == YValidation)/numel(YValidation);
 disp(accuracy)
