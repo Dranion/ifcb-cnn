@@ -3,3 +3,6 @@
 
 ##Ignore image folders
 images/
+
+#Ignore matlab temps 
+*.asv
