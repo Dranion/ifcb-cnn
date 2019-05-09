@@ -1,4 +1,3 @@
-# ifcb-cnn
 MATLAB code for running ifcb images through a cnn. Very much in progress. 
 
 ## General workflow 
@@ -22,13 +21,15 @@ To make the dataset bigger and more accurate I'm trying a couple things. Current
 ### Running the CNN
 Its super easy! Just point it at wherever you've output all your processed images. It will then grab the classes from the subdirectory structure, split the images randomly, with half for training and half for validation, and run a rudimentary CNN on them. Then it will output graphs. 
 
-### Interpreting Graphs
-[ ] Write this 
+### Interpreting Data
+Currently very rough results are stored in results/cnn_results.xlsx. Basically pasted from testCNN's output, they're mostly for me to remeber the justification for changes and generally plotting improvements. For example, the decision to rotate images using augmentedImageDatastore's rotation, justified using a graph. <br>
+<img src="https://i.imgur.com/PyTj4QL.png" alt="graph indicating that validation accuracy is higher in sets without rotation" width="50%"/>
+- [ ] define terms 
 
 # TO DO 
 ##Short term 
 - [ ] Create documentation for existing code 
-- [ ] Validate on a non-rotated validation set 
+- [X] Validate on a non-rotated validation set 
 
 ##Long Term 
 - [ ] Classify more things 
