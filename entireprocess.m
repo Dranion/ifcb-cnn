@@ -1,4 +1,4 @@
-function [ ] = testCNN(imagePath)
+function [ ] = entireprocess(imagePath)
 % testCNN  Runs a basic CNN . 
 % net = testCNN(imagePath) create a basic CNN based on already
 % pre-processed images 
@@ -8,19 +8,35 @@ function [ ] = testCNN(imagePath)
 % MINST data set. 
 
 % Puts images into datastore, with the folder names as the labels. 
-imds = imageDatastore(imagePath, ...
+imds_all = imageDatastore(imagePath, ...
     'IncludeSubfolders',true,'LabelSource','foldernames');
- 
+% Get the total number of files in each folder.
+T = countEachLabel(imds_all); % Total count in each folder
+% See which folders have at least 100 files in them.
+goodFolderRows = T.Count >= 20;
+goodFolders = T.Label(goodFolderRows)
+for i = 1:length(goodFolders)
+    temp = string(goodFolders(i))
+    goodFolders(i) = strcat(imagePath, temp)
+end;
+strgoodFolders = string(goodFolders)
+% Get a new datastore with only those folders with 100 or more files in them.
+imds = imageDatastore(strgoodFolders,'IncludeSubfolders',false,'LabelSource','foldernames'); % All Sub folders with its labels. 
 %Check # of classes. 
 labelCount = countEachLabel(imds);
 disp(labelCount)
 [min_vals, ~] = min(labelCount{:,2});
 disp(min_vals)
 
+        
+
+
 %Check # of categories.  
 S = dir(imagePath);
 
-catnum = sum([S(~ismember({S.name},{'.','..'})).isdir]);
+%catnum = sum([S(~ismember({S.name},{'.','..'})).isdir]); when getting all
+%directories
+catnum = i % since only getting specific directories
 
 %Specify Training and Validation Sets. 80/20 split
 [imdsTrain,imdsValidation] = splitEachLabel(imds,0.8,0.2,'randomize');
@@ -82,3 +98,4 @@ YValidation = imdsValidationBackup.Labels;
 % Displays graphs for accuracy. 
 accuracy = sum(YPred == YValidation)/numel(YValidation);
 disp(accuracy)
+save(strcat("classification", datestr(now,'HH:MM:SS.FFF')))
