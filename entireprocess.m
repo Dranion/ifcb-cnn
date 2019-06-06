@@ -12,15 +12,16 @@ imds_all = imageDatastore(imagePath, ...
     'IncludeSubfolders',true,'LabelSource','foldernames');
 % Get the total number of files in each folder.
 T = countEachLabel(imds_all); % Total count in each folder
-% See which folders have at least 100 files in them.
+% See which folders have at least 20 files in them.
 goodFolderRows = T.Count >= 20;
-goodFolders = T.Label(goodFolderRows)
+
+goodFolders = T.Label(goodFolderRows);
 for i = 1:length(goodFolders)
-    temp = string(goodFolders(i))
-    goodFolders(i) = strcat(imagePath, temp)
-end;
-strgoodFolders = string(goodFolders)
-% Get a new datastore with only those folders with 100 or more files in them.
+    temp = string(goodFolders(i));
+    goodFolders(i) = strcat(imagePath, temp);
+end
+strgoodFolders = string(goodFolders);
+% Get a new datastore with only those folders with 20 or more files in them.
 imds = imageDatastore(strgoodFolders,'IncludeSubfolders',false,'LabelSource','foldernames'); % All Sub folders with its labels. 
 %Check # of classes. 
 labelCount = countEachLabel(imds);
@@ -30,16 +31,12 @@ disp(min_vals)
 
         
 
-
-%Check # of categories.  
-S = dir(imagePath);
-
 %catnum = sum([S(~ismember({S.name},{'.','..'})).isdir]); when getting all
 %directories
-catnum = i % since only getting specific directories
+catnum = i; % since only getting specific directories
 
-%Specify Training and Validation Sets. 80/20 split
-[imdsTrain,imdsValidation] = splitEachLabel(imds,0.8,0.2,'randomize');
+%Specify Training and Validation Sets. 70/30 split
+[imdsTrain,imdsValidation] = splitEachLabel(imds,0.7,0.3,'randomize');
 aug = imageDataAugmenter(...
     'FillValue',200, ...
     'RandXReflection', 1, ...
@@ -80,13 +77,14 @@ layers = [
     classificationLayer];
 
 %Specify training options. Not optimized at all. 
-options = trainingOptions('sgdm', ...
+options = trainingOptions('adam', ...
     'InitialLearnRate',0.01, ...
-    'MaxEpochs',4, ...
+    'MaxEpochs',40, ...
     'Shuffle','every-epoch', ...
     'ValidationData',imdsValidation, ...
-    'ValidationFrequency',30, ...
+    'ValidationFrequency',100, ...
     'Verbose',true, ...
+    'ValidationPatience',30, ...
     'Plots','training-progress');
 
 %Now train the net!
@@ -94,8 +92,11 @@ net = trainNetwork(imdsTrain,layers,options);
 %Now validate the net! 
 YPred = classify(net,imdsValidation);
 YValidation = imdsValidationBackup.Labels;
+matchingImages = imdsValidationBackup.Files;
 
 % Displays graphs for accuracy. 
 accuracy = sum(YPred == YValidation)/numel(YValidation);
 disp(accuracy)
-save(strcat("classification", datestr(now,'HH:MM:SS.FFF')))
+savelocation = fullfile("C:\Users\holstein\Documents\ifcbcnn\trainednets\", strcat(datestr(datetime('now'), 30), ".mat"))
+
+save(savelocation, 'net', 'YPred', 'YValidation', 'matchingImages')
