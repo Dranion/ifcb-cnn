@@ -17,9 +17,9 @@ Pre-processing is currently done using Matlab's augmentedImageDatastore as a par
 
 ### Running the CNN
 Its super easy! Just point it at wherever you've output all your processed images. 
-'''
+```
 entireprocess('C:\Users\holstein\Documents\IFCB Data\mirror\manual\pngs\')
-'''
+```
 It will then grab the classes from the subdirectory structure, split the images randomly, with half for training and half for validation, and run a rudimentary CNN on them. Then it will output graphs. 
 
 ### Determing Outcomes
