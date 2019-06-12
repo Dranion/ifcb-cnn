@@ -10,8 +10,11 @@ pngs
 └─── classification 
     │   img.png
 ```
-This is the structure that the [test data with products](https://github.com/hsosik/ifcb-analysis/wiki/Blob-extraction,-feature-extraction,-and-classifier-application#access-to-test-data-and-products) comes with, along with the file structure that [export_png_manual_fromROI.m](https://github.com/hsosik/ifcb-analysis/blob/master/IFCB_tools/export_png_manual_fromROI.m) outputs. 
-
+This is the structure that the [test data with products](https://github.com/hsosik/ifcb-analysis/wiki/Blob-extraction,-feature-extraction,-and-classifier-application#access-to-test-data-and-products) comes with, along with the file structure that [export_png_manual_fromROI.m](https://github.com/hsosik/ifcb-analysis/blob/master/IFCB_tools/export_png_manual_fromROI.m) outputs. To get images like this on your own, after manually classifying everything using [hsosik's process](https://github.com/hsosik/ifcb-analysis/wiki/Instructions-for-manual-annotation-of-images), run [export_png_manual_fromROI.m](https://github.com/hsosik/ifcb-analysis/blob/master/IFCB_tools/export_png_manual_fromROI.m). 
+```
+>> startMC()
+>> export_png_manual_fromROI('C:\Users\holstein\Documents\IFCB Data\mirror\manual\', 'C:\Users\holstein\Documents\IFCB Data\mirror\manual\pngs\', 'C:\Users\holstein\Documents\IFCB Data\mirror\data\')
+```
 ### Pre-processing and Image Augmentation
 Pre-processing is currently done using Matlab's augmentedImageDatastore as a part of entireprocess.m. Nothing special needs to be run to do it. 
 
