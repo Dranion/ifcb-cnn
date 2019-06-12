@@ -1,12 +1,14 @@
 function [ ] = entireprocess(imagePath)
-% testCNN  Runs a basic CNN . 
-% net = testCNN(imagePath) create a basic CNN based on already
-% pre-processed images 
+% entireprocess  Runs a basic CNN on raw pngs  
 % 
 % Assumes sub-directories indicate classifications. All images must be
-% pngs. Runs 4 epochs, CNN is currently based on MATLAB's example code for 
-% MINST data set. 
+% pngs. Runs 4 epochs, ignores sub-directors with less than 20 files in
+% them. See commented code for customization. 
+%
+% Example: entireprocess('C:\Users\holstein\Documents\IFCB Data\mirror\manual\pngs\')
 
+
+%% SELECTING IMAGES 
 % Puts images into datastore, with the folder names as the labels. 
 imds_all = imageDatastore(imagePath, ...
     'IncludeSubfolders',true,'LabelSource','foldernames');
@@ -30,29 +32,36 @@ disp(labelCount)
 disp(min_vals)
 
         
+catnum = i; % number of classes
+%% CHOOSING NET AND IMAGE VALUES
 
-%catnum = sum([S(~ismember({S.name},{'.','..'})).isdir]); when getting all
-%directories
-catnum = i; % since only getting specific directories
+%Specify Training and Validation Sets. 70/30 split currently. 
+[imdsTrain,imdsValidation] = splitEachLabel(imds,0.8,0.1,'randomize');
 
-%Specify Training and Validation Sets. 70/30 split
-[imdsTrain,imdsValidation] = splitEachLabel(imds,0.7,0.3,'randomize');
+%This defines how the images will be modified. By randomly applying
+%changes like shifting the image to the right, it helps prevent
+%overfitting. 
 aug = imageDataAugmenter(...
-    'FillValue',200, ...
-    'RandXReflection', 1, ...
-    'RandYReflection', 1, ...
-    'RandScale', [0.9 1.1], ...
-    'RandXTranslation', [-5, 5], ...
-    'RandYTranslation', [-5, 5] ...
+    'FillValue',200, ... % What color the image will be filled with when re-sized
+    'RandXReflection', 1, ... % If the images will be randomly reflected over x axis 
+    'RandYReflection', 1, ... % If the images will be randomly reflected over y axis 
+    'RandScale', [0.9 1.1], ... % The range of vals to randomly increase/decrease the image size by before resizing
+    'RandXTranslation', [-5, 5], ... % The range of vals to randomly move the image from left/right  
+    'RandYTranslation', [-5, 5] ... % The range of vals to randomly move the image down/up 
     );
-%'RandRotation', [-360, 360], ...
+
+%imgsize sets how large the image is. Smaller images will train and
+%classify faster, but may loose details 
 imgsize = [120 120 1]; 
-imdsTrain = augmentedImageDatastore(imgsize, imdsTrain, 'DataAugmentation', aug);
-imdsValidationBackup = imdsValidation;
-imdsValidation = augmentedImageDatastore(imgsize, imdsValidation);
+
+%Sets up the training versus validation sets. 
+imdsTrain = augmentedImageDatastore(imgsize, imdsTrain, 'DataAugmentation', aug); %applies the aug modifcations to the training set
+imdsValidationBackup = imdsValidation; %backing up imdsValidation as a list like this allows it to be checked later
+imdsValidation = augmentedImageDatastore(imgsize, imdsValidation); % resizes the validation set to imgsize, too
 minibatch = read(imdsTrain);
-imshow(imtile(minibatch.input))
-%Define Network Architecture. Not optimized at all 
+imshow(imtile(minibatch.input)) % Shows a random sampling of the images. 
+
+%Define Network Architecture. Not optimized. 
 layers = [
     imageInputLayer(imgsize)
     
@@ -78,25 +87,28 @@ layers = [
 
 %Specify training options. Not optimized at all. 
 options = trainingOptions('adam', ...
-    'InitialLearnRate',0.01, ...
-    'MaxEpochs',40, ...
-    'Shuffle','every-epoch', ...
+    'InitialLearnRate',0.01, ... %How fast the data trains. 
+    'MaxEpochs',40, ... %How long the training will go. 
+    'Shuffle','every-epoch', ... %Keep this every-epoch
     'ValidationData',imdsValidation, ...
-    'ValidationFrequency',100, ...
-    'Verbose',true, ...
-    'ValidationPatience',30, ...
+    'ValidationFrequency',100, ...%How often to validate the data. 
+    'Verbose',true, ... %Whether to print out batch data. Probably should turn off when not debugging. 
+    'ValidationPatience',30, ... %If validation gets really good, stop training early 
     'Plots','training-progress');
+
+%% ACTUAL COMMANDS FOR RUNNING/TRAINING NET
 
 %Now train the net!
 net = trainNetwork(imdsTrain,layers,options);
+
 %Now validate the net! 
-YPred = classify(net,imdsValidation);
+YPred = classify(net,imdsValidation); % This is how you would classify regularly too. 
 YValidation = imdsValidationBackup.Labels;
 matchingImages = imdsValidationBackup.Files;
 
 % Displays graphs for accuracy. 
-accuracy = sum(YPred == YValidation)/numel(YValidation);
+accuracy = sum(YPred == YValidation)/numel(YValidation); 
 disp(accuracy)
-savelocation = fullfile("C:\Users\holstein\Documents\ifcbcnn\trainednets\", strcat(datestr(datetime('now'), 30), ".mat"))
+savelocation = fullfile("C:\Users\holstein\Documents\ifcbcnn\trainednets\", strcat(datestr(datetime('now'), 30), ".mat"));
 
 save(savelocation, 'net', 'YPred', 'YValidation', 'matchingImages')
